@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
+using namespace std;
 
 /* we need these includes for CUDA's random number stuff */
 #include <curand.h>
@@ -74,7 +75,7 @@ void streamOut(int *cpu_nums)
     {
         for (int i = 0; i <N ; i++)
         {
-            resultFile << cpu_nums[i] << " ";
+            resultFile << cpu_nums[i] << endl;
         }
         resultFile.close();
     }
