@@ -5,22 +5,27 @@ Spyder Editor
 This is a temporary script file.
 """
 
-import numpy as np
 import matplotlib.pyplot as plt
 
-
-f = open("/home/gamila/Documents/GP/RandomNumberGenerator/randomNum.txt", "r")
+probability=[]
+dataarr=[]
+f = open("randomNum.txt", "r")
 data =f.readlines() #list
-#data.list(delimeter)
+data=[int(i) for i in data]
+totalNums=len(data)
+#print(totalNums)
+data.sort()
+for i in data: 
+    probability.append(data.count(i)/totalNums)
+    dataarr.append(i)
+    
+print (dataarr)
+print (probability)
+    
 
-print (type(data))
-print(data)
-myarray = np.asarray(data)
-print (type(myarray))
-for i in myarray: 
-    print(myarray[0]) 
     
-    
-plt.plot(myarray)
+plt.ylabel('probability')
+plt.xlabel('Random Numbers')
+plt.plot(dataarr,probability)
 plt.show()
 
