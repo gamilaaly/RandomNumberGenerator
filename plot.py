@@ -1,31 +1,22 @@
-# -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
 
 import matplotlib.pyplot as plt
 
-probability=[]
-dataarr=[]
-f = open("randomNum.txt", "r")
-data =f.readlines() #list
-data=[int(i) for i in data]
-totalNums=len(data)
-#print(totalNums)
-data.sort()
-for i in data: 
-    probability.append(data.count(i)/totalNums)
+dataarr = []
+indecies = []
+
+f = open("src/randomNum.txt", "r")
+data = f.readlines() #list
+data = [int(i) for i in data] #string to int
+totalNums = len(data)
+
+for i in data:
     dataarr.append(i)
-    
-print (dataarr)
-print (probability)
-    
+    indecies.append(data.index(i))
 
     
-plt.ylabel('probability')
-plt.xlabel('Random Numbers')
-plt.plot(dataarr,probability)
+print(dataarr)
+print(indecies)
+
+plt.axis([0, totalNums, 0, 100])
+plt.plot(indecies,data, 'ro')
 plt.show()
-
