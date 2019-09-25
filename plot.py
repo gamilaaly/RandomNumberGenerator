@@ -14,9 +14,9 @@ for i in data:
     indecies.append(data.index(i))
 
     
-print(dataarr)
-print(indecies)
+#print(dataarr)
+#print(indecies)
 
-plt.axis([0, totalNums, 0, 100])
+plt.axis([0, totalNums, 0, 2000])
 plt.plot(indecies,data, 'ro')
 plt.show()
