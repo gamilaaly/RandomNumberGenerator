@@ -15,11 +15,11 @@ void streamOut (int *hostNums);
 __global__ void randoms(unsigned int seed, curandState_t* states, int* random_numbers) {
   // initialize the random states
    curand_init(seed, //must be different every run so the sequence of numbers change. 
-    blockIdx.x, // the sequence number should be different for each core ???
+    threadIdx.x, // the sequence number should be different for each core ???
     0, //step between random numbers
-    &states[blockIdx.x]);
+    &states[threadIdx.x]);
   
-  random_numbers[blockIdx.x] = curand(&states[blockIdx.x]) % MAX;
+  random_numbers[threadIdx.x] = curand(&states[threadIdx.x]) % MAX;
 }
 
 int main() {
@@ -29,7 +29,7 @@ int main() {
   int* deviceNums;
   cudaMalloc((void**) &deviceNums, N * sizeof(int));
 
-  randoms<<<N, 1>>>( time(0), states, deviceNums);
+  randoms<<<1,N>>>( time(0), states, deviceNums);
 
   cudaMemcpy(hostNums, deviceNums, N * sizeof( int), cudaMemcpyDeviceToHost);
 
