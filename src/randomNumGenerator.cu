@@ -11,21 +11,18 @@ using namespace std;
 
 void streamOut (int *hostNums);
 
-/* this GPU kernel takes an array of states, and an array of ints, and puts a random int into each */
-__global__ void randoms(unsigned int seed, curandState_t* states, int* numbers) {
+// kernel takes array of states and seed and change in the device array of random numbers
+__global__ void randoms(unsigned int seed, curandState_t* states, int* random_numbers) {
   // initialize the random states
-   curand_init(seed, /* the seed can be the same for each core, here we pass the time in from the CPU */
-    blockIdx.x, /* the sequence number should be different for each core (unless you want all
-                   cores to get the same sequence of numbers for some reason - use thread id! */
-    0, /* the offset is how much extra we advance in the sequence for each call, can be 0 */
+   curand_init(seed, //must be different every run so the sequence of numbers change. 
+    blockIdx.x, // the sequence number should be different for each core ???
+    0, //step between random numbers
     &states[blockIdx.x]);
-  /* curand works like rand - except that it takes a state as a parameter */
-  numbers[blockIdx.x] = curand(&states[blockIdx.x]) % MAX;
+  
+  random_numbers[blockIdx.x] = curand(&states[blockIdx.x]) % MAX;
 }
 
 int main() {
-  /* CUDA's random number library uses curandState_t to keep track of the seed value
-     we will store a random state for every thread  */
   curandState_t* states;
   cudaMalloc((void**) &states, N * sizeof(curandState_t));
   int *hostNums= (int*)malloc(sizeof(int) * N);
