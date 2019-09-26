@@ -9,29 +9,30 @@ using namespace std;
 #define N 500
 #define MAX 2000
 
-void streamOut (int *hostNums);
+void streamOut (float *hostNums);
 
 // kernel takes array of states and seed and change in the device array of random numbers
-__global__ void randoms(unsigned int seed, curandState_t* states, int* random_numbers) {
+__global__ void randoms(unsigned int seed, curandState_t* states, float* random_numbers) {
   // initialize the random states
    curand_init(seed, //must be different every run so the sequence of numbers change. 
     threadIdx.x, // the sequence number should be different for each core ???
     0, //step between random numbers
     &states[threadIdx.x]);
   
-  random_numbers[threadIdx.x] = curand(&states[threadIdx.x]) % MAX;
+  random_numbers[threadIdx.x] = (curand(&states[threadIdx.x]) % MAX);
+  random_numbers[threadIdx.x] = random_numbers[threadIdx.x] /MAX;
 }
 
 int main() {
   curandState_t* states;
   cudaMalloc((void**) &states, N * sizeof(curandState_t));
-  int *hostNums= (int*)malloc(sizeof(int) * N);
-  int* deviceNums;
-  cudaMalloc((void**) &deviceNums, N * sizeof(int));
+  float *hostNums= (float*)malloc(sizeof(float) * N);
+  float* deviceNums;
+  cudaMalloc((void**) &deviceNums, N * sizeof(float));
 
   randoms<<<1,N>>>( time(0), states, deviceNums);
 
-  cudaMemcpy(hostNums, deviceNums, N * sizeof( int), cudaMemcpyDeviceToHost);
+  cudaMemcpy(hostNums, deviceNums, N * sizeof( float), cudaMemcpyDeviceToHost);
 
   streamOut(&hostNums[0]);
 
@@ -42,12 +43,12 @@ int main() {
   return 0;
 }
 
-void streamOut(int *hostNums)
+void streamOut(float *hostNums)
 {
     std::ofstream resultFile;
     resultFile.open("randomNum.txt");
     if (resultFile.is_open())
-    {   resultFile << MAX << endl;
+    {   resultFile << 1 << endl; // to have normal dist
         for (int i = 0; i <N ; i++)
         {
             resultFile << hostNums[i] << endl;

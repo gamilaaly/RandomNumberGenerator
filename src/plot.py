@@ -7,7 +7,7 @@ indecies = []
 f = open("randomNum.txt", "r")
 data = f.readlines() #list
 data.pop(0)  #to remove the maximun number from the array
-data = [int(i) for i in data] #string to int
+data = [float(i) for i in data] #string to int
 totalNums = len(data) -1
 Max = data[0]
 
