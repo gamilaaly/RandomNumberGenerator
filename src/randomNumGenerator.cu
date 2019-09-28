@@ -6,7 +6,7 @@
 #include <curand_kernel.h>
 using namespace std;
 
-#define N 500
+#define N 100000
 #define MAX 2000
 
 void streamOut (float *hostNums);
@@ -15,12 +15,12 @@ void streamOut (float *hostNums);
 __global__ void randoms(unsigned int seed, curandState_t* states, float* random_numbers) {
   // initialize the random states
    curand_init(seed, //must be different every run so the sequence of numbers change. 
-    threadIdx.x, // the sequence number should be different for each core ???
+    blockIdx.x, // the sequence number should be different for each core ???
     0, //step between random numbers
-    &states[threadIdx.x]);
+    &states[blockIdx.x]);
   
-  random_numbers[threadIdx.x] = (curand(&states[threadIdx.x]) % MAX);
-  random_numbers[threadIdx.x] = random_numbers[threadIdx.x] /MAX;
+  random_numbers[blockIdx.x] = (curand(&states[blockIdx.x]) % MAX);
+  random_numbers[blockIdx.x] = random_numbers[blockIdx.x] /MAX;
 }
 
 int main() {
@@ -30,7 +30,7 @@ int main() {
   float* deviceNums;
   cudaMalloc((void**) &deviceNums, N * sizeof(float));
 
-  randoms<<<1,N>>>( time(0), states, deviceNums);
+  randoms<<<N,1>>>( time(0), states, deviceNums);
 
   cudaMemcpy(hostNums, deviceNums, N * sizeof( float), cudaMemcpyDeviceToHost);
 

@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+from pylab import show,hist,subplot,figure
 
 dataarr = []
 indecies = []
@@ -43,10 +44,16 @@ histogram[2*len(firstHistoBar):3*len(firstHistoBar)]= thirdHistoBar
 histogram[3*len(firstHistoBar):4*len(firstHistoBar)]= fourthHistoBar
 histogram[4*len(firstHistoBar):5*len(firstHistoBar)]= fifthHistoBar
 
-print("Average= " + str(np.mean(data)))
-plt.axis([0, totalNums, 0, 1])
-plt.plot(histogram)
-plt.show()
+hist(dataarr)
+show()# contains the histograms of u1 and u2
+
+
+# print("Average= " + str(np.mean(data)))
+# plt.ylabel('Average')
+# plt.xlabel('Range of Numbers')
+# plt.axis([0, totalNums, 0, 1])
+# plt.plot(histogram)
+# plt.show()
 #plt.axis([0, totalNums, 0, Max])
 #plt.plot(indecies,data, 'b.')
 #plt.show()
