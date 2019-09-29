@@ -58,3 +58,19 @@ show()# contains the histograms of u1 and u2
 #plt.plot(indecies,data, 'b.')
 #plt.show()
 
+u = dataarr[0:math.floor((N/2))]
+g1 = dataarr[math.floor(N/2):math.floor(N-(N/4))]
+g2 = dataarr[math.floor(N-N/4):N]
+
+print(len(u))
+print(g1)
+print(g2)
+# plotting the values before and after the transformation
+figure()
+subplot(221) # the first row of graphs
+hist(u)     # contains the histograms of u1 and u2
+subplot(223)
+hist(g1)
+subplot(224) # the second contains
+hist(g2)    # the histograms of z1 and z
+show()

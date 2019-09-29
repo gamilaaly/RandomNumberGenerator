@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <stdio.h>
+#include<cmath>
 #include <iostream>
 #include <fstream>
 #include <curand.h>
@@ -8,50 +9,95 @@ using namespace std;
 
 #define N 100000
 #define MAX 2000
+#define two_pi 2.0*3.14159265358979323846
 
-void streamOut (float *hostNums);
+void streamOut (float *uniform_hostNums, float *gaussian_hostNums1 , float *gaussian_hostNums2);
 
 // kernel takes array of states and seed and change in the device array of random numbers
-__global__ void randoms(unsigned int seed, curandState_t* states, float* random_numbers) {
+__global__ void uniform_randoms(unsigned int seed, curandState_t* states, float* uniform_random_numbers) {
   // initialize the random states
    curand_init(seed, //must be different every run so the sequence of numbers change. 
     blockIdx.x, // the sequence number should be different for each core ???
     0, //step between random numbers
     &states[blockIdx.x]);
   
-  random_numbers[blockIdx.x] = (curand(&states[blockIdx.x]) % MAX);
-  random_numbers[blockIdx.x] = random_numbers[blockIdx.x] /MAX;
+  uniform_random_numbers[blockIdx.x] = (curand(&states[blockIdx.x]) % MAX);
+  uniform_random_numbers[blockIdx.x] = uniform_random_numbers[blockIdx.x] /MAX;
+}
+__global__ void uniform_random_distribution(float* uniform_random_numbers, float *uniform_deviceNums1 , float *uniform_deviceNums2)
+{  if (blockIdx.x < N/2){ //divind the unifrom device array into two arrays
+  uniform_deviceNums1[blockIdx.x]=uniform_random_numbers[blockIdx.x];
+  }
+  else if (blockIdx.x >= N/2){
+    uniform_deviceNums2[blockIdx.x-(N/2)]=uniform_random_numbers[blockIdx.x];
+  }
 }
 
+__global__ void gaussian_random_distribution(float * gaussian_random_numbers1, float * gaussian_random_numbers2 , float *uniform_deviceNums1 , float *uniform_deviceNums2){
+  //gaussian_random_numbers1[blockIdx.x]= sqrt(-2*log(uniform_deviceNums1[blockIdx.x]))*cos(two_pi*uniform_deviceNums2[blockIdx.x-(N/2)]);
+  //gaussian_random_numbers2[blockIdx.x-(N/2)]= sqrt(-2*log(uniform_deviceNums1[blockIdx.x]))*sin(two_pi*uniform_deviceNums2[blockIdx.x-(N/2)]);
+}
 int main() {
   curandState_t* states;
   cudaMalloc((void**) &states, N * sizeof(curandState_t));
-  float *hostNums= (float*)malloc(sizeof(float) * N);
-  float* deviceNums;
-  cudaMalloc((void**) &deviceNums, N * sizeof(float));
+  float *uniform_hostNums= (float*)malloc(sizeof(float) * N);
+  float *gaussian_hostNums1= (float*)malloc(sizeof(float) * (N/2));
+  float *gaussian_hostNums2= (float*)malloc(sizeof(float) * (N/2));
 
-  randoms<<<N,1>>>( time(0), states, deviceNums);
+  float* uniform_deviceNums;
+  cudaMalloc((void**) &uniform_deviceNums, N * sizeof(float));
+  float* uniform_deviceNums1;
+  cudaMalloc((void**) &uniform_deviceNums1, (N/2) * sizeof(float));
+  float* uniform_deviceNums2;
+  cudaMalloc((void**) &uniform_deviceNums2, (N/2) * sizeof(float));
+  float* gaussian_deviceNums1;
+  cudaMalloc((void**) &gaussian_deviceNums1, (N/2) * sizeof(float));
+  float* gaussian_deviceNums2;
+  cudaMalloc((void**) &gaussian_deviceNums2, (N/2) * sizeof(float));
 
-  cudaMemcpy(hostNums, deviceNums, N * sizeof( float), cudaMemcpyDeviceToHost);
+  uniform_randoms<<<N,1>>>( time(0), states, uniform_deviceNums);
+  uniform_random_distribution<<<N,1>>>(uniform_deviceNums,uniform_deviceNums1, uniform_deviceNums2);
+  gaussian_random_distribution<<<N,1>>>(gaussian_deviceNums1,gaussian_deviceNums2,uniform_deviceNums1,uniform_deviceNums2);
 
-  streamOut(&hostNums[0]);
+  cudaMemcpy(uniform_hostNums, uniform_deviceNums, N * sizeof( float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(gaussian_hostNums1, gaussian_deviceNums1, (N/2) * sizeof( float), cudaMemcpyDeviceToHost);
+  cudaMemcpy(gaussian_hostNums2, gaussian_deviceNums2, (N/2) * sizeof( float), cudaMemcpyDeviceToHost);
+
+
+  streamOut(&uniform_hostNums[0],&gaussian_hostNums1[0],&gaussian_hostNums2[0]);
 
   cudaFree(states);
-  cudaFree(deviceNums);
-  free(hostNums);
+  cudaFree(uniform_deviceNums);
+  cudaFree(gaussian_deviceNums1);
+  cudaFree(gaussian_deviceNums2);
+  cudaFree(uniform_deviceNums2);
+  cudaFree(uniform_deviceNums1);
+
+
+  free(uniform_hostNums);
+  free(gaussian_hostNums1);
+  free(gaussian_hostNums2);
 
   return 0;
 }
 
-void streamOut(float *hostNums)
+void streamOut(float *uniform_hostNums, float *gaussian_hostNums1 , float *gaussian_hostNums2)
 {
     std::ofstream resultFile;
     resultFile.open("randomNum.txt");
     if (resultFile.is_open())
-    {   resultFile << 1 << endl; // to have normal dist
-        for (int i = 0; i <N ; i++)
+    {   
+      for (int i = 0; i <N ; i++)
+      {
+          resultFile << uniform_hostNums[i] << endl;
+      }
+        for (int i = 0; i <N/2 ; i++)
         {
-            resultFile << hostNums[i] << endl;
+            resultFile << gaussian_hostNums1[i] << endl;
+        }
+        for (int i = 0; i <N/2 ; i++)
+        {
+            resultFile << gaussian_hostNums2[i] << endl;
         }
         resultFile.close();
     }
