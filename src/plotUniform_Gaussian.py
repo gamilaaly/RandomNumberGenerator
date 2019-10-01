@@ -15,10 +15,6 @@ uniformdata=data[0:math.floor(N/2)]
 gaussiandata1=data[math.floor(N/2)+1 :math.floor(N-(N/4)) ]
 gaussiandata2=data[math.floor(N-(N/4)) +1 : N]
 
-print(len(uniformdata))
-print(len(gaussiandata1))
-print(len(gaussiandata2))
-
 
 uniformdataarr= asarray(uniformdata)
 gaussiandataarr1= asarray(gaussiandata1)
