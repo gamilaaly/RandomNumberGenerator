@@ -21,22 +21,24 @@ __global__ void uniform_randoms(unsigned int seed, curandState_t* states, float*
     0, //step between random numbers
     &states[blockIdx.x]);
   
-  uniform_random_numbers[blockIdx.x] = (curand(&states[blockIdx.x]) % MAX);
-  uniform_random_numbers[blockIdx.x] = uniform_random_numbers[blockIdx.x] /MAX;
+  uniform_random_numbers[blockIdx.x] = curand_uniform(&states[blockIdx.x]);
 }
-__global__ void uniform_random_distribution(float* uniform_random_numbers, float *uniform_deviceNums1 , float *uniform_deviceNums2, float * gaussian_random_numbers1, float * gaussian_random_numbers2 )
+__global__ void uniform_random_distribution(float* uniform_random_numbers, float *uniform_deviceNums1 , float *uniform_deviceNums2)
 {  if (blockIdx.x < N/2){ //divind the unifrom device array into two arrays
   uniform_deviceNums1[blockIdx.x]=uniform_random_numbers[blockIdx.x];
   }
   else if (blockIdx.x >= N/2 && blockIdx.x < N ){
     uniform_deviceNums2[blockIdx.x-(N/2)]=uniform_random_numbers[blockIdx.x];
+  }}
+
+ __global__ void gaussian_random_distribution(float *uniform_deviceNums1,float *uniform_deviceNums2, float * gaussian_random_numbers1, float * gaussian_random_numbers2)
+  {
+   if (blockIdx.x < N/2){
+    gaussian_random_numbers1[blockIdx.x]= sqrt(-2*log(uniform_deviceNums1[blockIdx.x]))*cos(two_pi*uniform_deviceNums2[blockIdx.x]);
   }
- // else if (blockIdx.x >= N && blockIdx.x <= (N/2 +N)){
-   // gaussian_random_numbers1[blockIdx.x]= sqrt(-2*log(uniform_deviceNums1[blockIdx.x-N]))*cos(two_pi*uniform_deviceNums2[blockIdx.x-((N/2)+N)]);
-  //}
-  //else if (blockIdx.x >= (N/2 +N) ){
-    //gaussian_random_numbers2[blockIdx.x]= sqrt(-2*log(uniform_deviceNums1[blockIdx.x-N]))*sin(two_pi*uniform_deviceNums2[blockIdx.x-((N/2)+N)]);;
-  //}
+  else if (blockIdx.x >= N/2 && blockIdx.x < N ){
+    gaussian_random_numbers2[blockIdx.x-(N/2)]= sqrt(-2*log(uniform_deviceNums1[blockIdx.x-N/2]))*sin(two_pi*uniform_deviceNums2[blockIdx.x-N/2]);
+  }
 }
 
 
@@ -48,7 +50,7 @@ int main() {
   float *gaussian_hostNums1= (float*)malloc(sizeof(float) * (N/2));
   float *gaussian_hostNums2= (float*)malloc(sizeof(float) * (N/2));
 
-  float* uniform_deviceNums;
+  float* uniform_deviceNums = NULL;
   cudaMalloc((void**) &uniform_deviceNums, N * sizeof(float));
   float* uniform_deviceNums1;
   cudaMalloc((void**) &uniform_deviceNums1, (N/2) * sizeof(float));
@@ -60,8 +62,8 @@ int main() {
   cudaMalloc((void**) &gaussian_deviceNums2, (N/2) * sizeof(float));
 
   uniform_randoms<<<N,1>>>( time(0), states, uniform_deviceNums);
-  uniform_random_distribution<<<2*N,1>>>(uniform_deviceNums,uniform_deviceNums1, uniform_deviceNums2, gaussian_deviceNums1,gaussian_deviceNums2);
- // gaussian_random_distribution<<<N,1>>>(gaussian_deviceNums1,gaussian_deviceNums2,uniform_deviceNums1,uniform_deviceNums2);
+  uniform_random_distribution<<<N,1>>>(uniform_deviceNums,uniform_deviceNums1, uniform_deviceNums2);
+  gaussian_random_distribution<<<N,1>>>(uniform_deviceNums1,uniform_deviceNums2,gaussian_deviceNums1,gaussian_deviceNums2);
 
   cudaMemcpy(uniform_hostNums, uniform_deviceNums, N * sizeof( float), cudaMemcpyDeviceToHost);
   cudaMemcpy(gaussian_hostNums1, gaussian_deviceNums1, (N/2) * sizeof( float), cudaMemcpyDeviceToHost);

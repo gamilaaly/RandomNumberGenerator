@@ -1,8 +1,7 @@
 from pylab import show,hist,subplot,figure
-from numpy import asarray,finfo
+from numpy import asarray
 import math
 
-eps = finfo(float).eps
 uniformdataarr = []
 gaussiandataarr1=[]
 gaussiandataarr2 =[]
@@ -15,14 +14,9 @@ uniformdata=data[0:math.floor(N/2)]
 gaussiandata1=data[math.floor(N/2)+1 :math.floor(N-(N/4)) ]
 gaussiandata2=data[math.floor(N-(N/4)) +1 : N]
 
-
 uniformdataarr= asarray(uniformdata)
 gaussiandataarr1= asarray(gaussiandata1)
 gaussiandataarr2= asarray(gaussiandata2)
-
-print(len(uniformdataarr))
-print(len(gaussiandataarr1))
-print(len(gaussiandataarr2))
 
 figure()
 subplot(311) # the first row of graphs
