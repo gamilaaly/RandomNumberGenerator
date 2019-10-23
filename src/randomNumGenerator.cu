@@ -100,10 +100,14 @@ void streamOut(float *uniform_hostNums, float *gaussian_hostNums1 , float *gauss
         for (int i = 0; i <N/2 ; i++)
         {
             resultFile << gaussian_hostNums1[i] << endl;
+
+
         }
         for (int i = 0; i <N/2 ; i++)
         {
             resultFile << gaussian_hostNums2[i] << endl;
+
+
         }
         resultFile.close();
     }
