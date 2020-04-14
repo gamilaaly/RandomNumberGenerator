@@ -90,7 +90,7 @@ int main() {
 void streamOut(float *uniform_hostNums, float *gaussian_hostNums1 , float *gaussian_hostNums2)
 {
     std::ofstream resultFile;
-    resultFile.open("randomNum.txt");
+    resultFile.open("randomNumbers.csv");
     if (resultFile.is_open())
     {   
       for (int i = 0; i <N ; i++)

@@ -6,5 +6,5 @@ find_package(CUDA QUIET REQUIRED)
 
 
 cuda_add_executable(
-    random src/randomNumGenerator.cu)
+    Random src/RNG.cu)
 
